@@ -1,8 +1,8 @@
-import React , { useState , useRef , useEffect } from 'react'
-import { BiPlus } from 'react-icons/bi'
-import { BiCalendarEvent } from 'react-icons/bi'
-import DatePicker from './DatePicker'
-import styled from 'styled-components'
+import React, { useState, useRef, useEffect } from 'react';
+import { BiPlus } from 'react-icons/bi';
+import { BiCalendarEvent } from 'react-icons/bi';
+import DatePickerComponent from './DatePicker';
+import styled from 'styled-components';
 
 const Input = styled.input`
   color: ${props => props.theme === 'dark' ? '#fff' : '#000'};
@@ -13,26 +13,26 @@ const Button = styled.button`
   color: ${props => props.theme === 'dark' ? '#fff' : '#000'};
 `;
 
-const Addtodo = ({ submited , handInput , setDate , date , text, theme }) => {
+const Addtodo = ({ submited, handInput, setDate, date, text, theme }) => {
 
-    const cal = useRef()
-    const [openCal, setOpenCal] = useState(false)
+    const cal = useRef();
+    const [openCal, setOpenCal] = useState(false);
     const openCalendar = () => {
-        setOpenCal( !openCal )
-    }
+        setOpenCal(!openCal);
+    };
 
     useEffect(() => {
-            document.addEventListener("mousedown" , handleClick)
+        document.addEventListener("mousedown", handleClick);
         return () => {
-            document.removeEventListener("mousedown" , handleClick)
-        }
-    }, [])
+            document.removeEventListener("mousedown", handleClick);
+        };
+    }, []);
 
     const handleClick = (e) => {
-        if (!cal.current.contains(e.target)) {
-            setOpenCal(false)
+        if (cal.current && !cal.current.contains(e.target)) {
+            setOpenCal(false);
         }
-    }
+    };
 
     return (
         <div className="add-todo">
@@ -51,10 +51,10 @@ const Addtodo = ({ submited , handInput , setDate , date , text, theme }) => {
                 <div className={`datepick ${openCal && "purple"}`} onClick={openCalendar}>
                      <BiCalendarEvent />
                 </div>  
-                {openCal && <DatePicker date={date} setDate={setDate} />}
+                {openCal && <DatePickerComponent date={date} setDate={setDate} />}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Addtodo
+export default Addtodo;

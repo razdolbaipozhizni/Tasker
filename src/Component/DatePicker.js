@@ -1,15 +1,14 @@
-import React from 'react'
-import { format } from 'date-fns'
-import { enGB } from 'date-fns/locale'
-import { DatePickerCalendar } from 'react-nice-dates'
-import 'react-nice-dates/build/style.css'
+import React from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
- function DatePicker({date , setDate}) {
+function DatePickerComponent({ date, setDate }) {
   return (
     <div className="date-picker">
-      <p>The selected date is : {date && format(date, 'dd MMM yyyy', { locale: enGB })}</p>
-      <DatePickerCalendar date={date} onDateChange={setDate} locale={enGB} />
+      <p>Выбранная дата: {date && date.toLocaleDateString('ru-RU')}</p>
+      <DatePicker selected={date} onChange={date => setDate(date)} />
     </div>
-  )
+  );
 }
-export default DatePicker
+
+export default DatePickerComponent;
