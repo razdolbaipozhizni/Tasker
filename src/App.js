@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './style.css';
 import Addtodo from './Component/Addtodo';
@@ -10,6 +11,8 @@ import { ThemeProvider } from 'styled-components';
 import { lightTheme, darkTheme } from './theme';
 import { GlobalStyles } from './GlobalStyles';
 import ThemeToggle from './Component/ThemeToggle';
+import { db } from './firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 const App = () => {
   const [date, setDate] = useState();
@@ -22,16 +25,54 @@ const App = () => {
   const [filteredTodos, setFilteredTodos] = useState([]);
 
   useEffect(() => {
-    getLocalstorage();
+    const fetchTodos = async () => {
+      const todosCollection = await getDocs(collection(db, 'todos'));
+      setTodos(todosCollection.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+    };
+    fetchTodos();
   }, []);
 
-  useEffect(() => {
-    saveLs(todos);
-  }, [todos]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    let time = date && format(date, 'dd MMM yyyy', { locale: enGB });
+    if (text === '') {
+      setErr("Please enter a task");
+      return;
+    }
+    if (time === undefined) {
+      time = "today";
+    }
+    await addDoc(collection(db, 'todos'), {
+      todo: text,
+      date: time,
+      completed: false,
+      important: false,
+      createdAt: serverTimestamp()
+    });
+    setText('');
+    setDate(null);
+    setErr('');
+  };
+
+  const deleteTodo = async (id) => {
+    await deleteDoc(doc(db, 'todos', id));
+  };
+
+  const toggleImportant = async (id, important) => {
+    await updateDoc(doc(db, 'todos', id), {
+      important: !important
+    });
+  };
+
+  const completedHandle = async (id, completed) => {
+    await updateDoc(doc(db, 'todos', id), {
+      completed: !completed
+    });
+  };
 
   const filterAndSearchTodos = useCallback(() => {
     let filtered = todos;
-  
+
     switch (filterChecked) {
       case "Выполненные":
         filtered = todos.filter((todo) => todo.completed === true);
@@ -49,11 +90,11 @@ const App = () => {
         filtered = todos;
         break;
     }
-  
+
     const searched = filtered.filter(todo =>
       todo.todo.toLowerCase().includes(searchText.toLowerCase())
     );
-  
+
     setFilteredTodos(searched);
   }, [todos, filterChecked, searchText]);
 
@@ -69,69 +110,13 @@ const App = () => {
     setText(e.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    let time = date && format(date, 'dd MMM yyyy', { locale: enGB });
-    const id = Math.random() * 2;
-    if (text === '') {
-      setErr("Please enter a task");
-      return;
-    }
-    if (time === undefined) {
-      time = "today";
-    }
-    setTodos([...todos, { todo: text, date: time, completed: false, key: id, important: false }]);
-    setDate();
-    setText('');
-    setErr('');
-  };
-
-  const saveLs = (todos) => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  };
-
-  const getLocalstorage = () => {
-    if (localStorage.getItem('todos') === null) {
-      localStorage.setItem('todos', JSON.stringify([]));
-    } else {
-      let todoLs = JSON.parse(localStorage.getItem('todos'));
-      setTodos(todoLs);
-    }
-  };
-
-  const toggleImportant = (id) => {
-    setTodos(todos.map((todo) => {
-      if (todo.key === id) {
-        return {
-          ...todo, important: !todo.important
-        };
-      }
-      return todo;
-    }));
-  };
-
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.key !== id));
-  };
-
-  const completedHandle = (id) => {
-    setTodos(todos.map((todo) => {
-      if (todo.key === id) {
-        return {
-          ...todo, completed: !todo.completed
-        };
-      }
-      return todo;
-    }));
-  };
-
   const moveTask = (id, direction) => {
-    const index = todos.findIndex(todo => todo.key === id);
+    const index = todos.findIndex(todo => todo.id === id);
     if (index < 0) return;
-  
+
     const newTodos = [...todos];
     const [task] = newTodos.splice(index, 1);
-  
+
     if (direction === 'up' && index > 0) {
       newTodos.splice(index - 1, 0, task);
     } else if (direction === 'down' && index < newTodos.length) {
@@ -139,21 +124,15 @@ const App = () => {
     } else {
       newTodos.splice(index, 0, task);
     }
-  
+
     setTodos(newTodos);
   };
 
-  const updateTask = (id, newText, newDate) => {
-    setTodos(todos.map(todo => {
-      if (todo.key === id) {
-        return {
-          ...todo,
-          todo: newText,
-          date: newDate ? format(newDate, 'dd MMM yyyy', { locale: enGB }) : todo.date,
-        };
-      }
-      return todo;
-    }));
+  const updateTask = async (id, newText, newDate) => {
+    await updateDoc(doc(db, 'todos', id), {
+      todo: newText,
+      date: newDate ? format(newDate, 'dd MMM yyyy', { locale: enGB }) : db.collection('todos').doc(id).date,
+    });
   };
 
   const filterCheck = (filter) => {
@@ -186,7 +165,7 @@ const App = () => {
             <ul className="todo-list">
               {filteredTodos.map((todo, index) => {
                 return <Todos
-                  key={todo.key}
+                  key={todo.id}
                   text={todo.todo}
                   date={todo.date}
                   todo={todo}

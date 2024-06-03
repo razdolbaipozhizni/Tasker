@@ -1,3 +1,4 @@
+// src/Component/Todos.js
 import React, { useState } from 'react';
 import { BiCheck, BiX, BiStar, BiUpArrow, BiDownArrow, BiPencil, BiSave, BiCalendar } from "react-icons/bi";
 import styled from 'styled-components';
@@ -31,7 +32,7 @@ const Todos = ({ text, date, todo, setCompleted, deleteHandle, theme, toggleImpo
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleSave = () => {
-    updateTask(todo.key, newText, newDate);
+    updateTask(todo.id, newText, newDate);
     setIsEditing(false);
   };
 
@@ -66,11 +67,11 @@ const Todos = ({ text, date, todo, setCompleted, deleteHandle, theme, toggleImpo
               </DatePickerPopup>
             )}
           </DatePickerContainer>
-          <ImportantButton onClick={() => toggleImportant(todo.key)} important={todo.important} theme={theme}> <BiStar /> </ImportantButton>
-          <Button onClick={() => moveTask(todo.key, 'up')} theme={theme}> <BiUpArrow /> </Button>
-          <Button onClick={() => moveTask(todo.key, 'down')} theme={theme}> <BiDownArrow /> </Button>
-          <Button onClick={() => setCompleted(todo.key)} theme={theme}> <BiCheck /> </Button>
-          <Button onClick={() => deleteHandle(todo.key)} theme={theme}> <BiX /></Button>
+          <ImportantButton onClick={() => toggleImportant(todo.id, todo.important)} important={todo.important} theme={theme}> <BiStar /> </ImportantButton>
+          <Button onClick={() => moveTask(todo.id, 'up')} theme={theme}> <BiUpArrow /> </Button>
+          <Button onClick={() => moveTask(todo.id, 'down')} theme={theme}> <BiDownArrow /> </Button>
+          <Button onClick={() => setCompleted(todo.id, todo.completed)} theme={theme}> <BiCheck /> </Button>
+          <Button onClick={() => deleteHandle(todo.id)} theme={theme}> <BiX /></Button>
           {isEditing ? (
             <Button onClick={handleSave} theme={theme}> <BiSave /> </Button>
           ) : (
