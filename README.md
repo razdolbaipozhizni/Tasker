@@ -12,6 +12,9 @@
 ### `npm start` запуск приложения
 
 
+![database](https://github.com/razdolbaipozhizni/Tasker/assets/61944225/f26930af-c5ea-4591-9046-a24e0cbe0ae3)
+![ligththeme](https://github.com/razdolbaipozhizni/Tasker/assets/61944225/295a7538-69f6-4a78-ad0b-78cf9a4442c2)
+![darktheme](https://github.com/razdolbaipozhizni/Tasker/assets/61944225/5148905b-623c-44d0-8c62-ac2c793cf29e)
 
 
 
