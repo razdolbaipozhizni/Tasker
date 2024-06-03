@@ -11,6 +11,8 @@
 ### `npm install` - запуск приложения на локальном сервере и установка зависимостей
 ### `npm start` запуск приложения
 
+https://github.com/razdolbaipozhizni/Tasker/issues/1#issue-2332092642
+
 
 
 
