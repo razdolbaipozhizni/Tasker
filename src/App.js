@@ -12,7 +12,7 @@ import { lightTheme, darkTheme } from './theme';
 import { GlobalStyles } from './GlobalStyles';
 import ThemeToggle from './Component/ThemeToggle';
 import { db } from './firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 
 const App = () => {
   const [date, setDate] = useState();
@@ -25,11 +25,14 @@ const App = () => {
   const [filteredTodos, setFilteredTodos] = useState([]);
 
   useEffect(() => {
-    const fetchTodos = async () => {
-      const todosCollection = await getDocs(collection(db, 'todos'));
-      setTodos(todosCollection.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-    };
-    fetchTodos();
+    const unsubscribe = onSnapshot(collection(db, 'todos'), (snapshot) => {
+      const todosData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      todosData.sort((a, b) => a.order - b.order);
+      setTodos(todosData);
+    });
+
+    // Clean up the subscription
+    return () => unsubscribe();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -42,11 +45,13 @@ const App = () => {
     if (time === undefined) {
       time = "today";
     }
+    const newOrder = todos.length > 0 ? Math.max(...todos.map(todo => todo.order)) + 1 : 1;
     await addDoc(collection(db, 'todos'), {
       todo: text,
       date: time,
       completed: false,
       important: false,
+      order: newOrder,
       createdAt: serverTimestamp()
     });
     setText('');
@@ -110,7 +115,7 @@ const App = () => {
     setText(e.target.value);
   };
 
-  const moveTask = (id, direction) => {
+  const moveTask = async (id, direction) => {
     const index = todos.findIndex(todo => todo.id === id);
     if (index < 0) return;
 
@@ -126,12 +131,21 @@ const App = () => {
     }
 
     setTodos(newTodos);
+
+    // Обновление порядка задач в Firestore
+    await Promise.all(newTodos.map((todo, idx) => {
+      return updateDoc(doc(db, 'todos', todo.id), { order: idx + 1 });
+    }));
   };
 
   const updateTask = async (id, newText, newDate) => {
-    await updateDoc(doc(db, 'todos', id), {
+    const todoRef = doc(db, 'todos', id);
+    const todoDoc = await getDoc(todoRef);
+    const currentData = todoDoc.data();
+
+    await updateDoc(todoRef, {
       todo: newText,
-      date: newDate ? format(newDate, 'dd MMM yyyy', { locale: enGB }) : db.collection('todos').doc(id).date,
+      date: newDate ? format(newDate, 'dd MMM yyyy', { locale: enGB }) : currentData.date,
     });
   };
 
