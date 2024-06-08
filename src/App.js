@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './style.css';
 import Addtodo from './Component/Addtodo';
@@ -20,7 +19,7 @@ const App = () => {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [err, setErr] = useState('');
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [filterChecked, setFilterChecked] = useState('Все');
   const [filteredTodos, setFilteredTodos] = useState([]);
 
@@ -108,7 +107,9 @@ const App = () => {
   }, [todos, filterChecked, searchText, filterAndSearchTodos]);
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
   };
 
   const handInput = (e) => {
